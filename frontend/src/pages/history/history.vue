@@ -41,7 +41,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onShow } from 'vue'
+import { ref, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 
 const shownEvents = ref([])
 

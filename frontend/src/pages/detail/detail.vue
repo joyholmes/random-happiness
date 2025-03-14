@@ -33,6 +33,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+// 如果使用了 onShow，也需要从 @dcloudio/uni-app 导入
+// import { onShow } from '@dcloudio/uni-app'
 
 const event = ref(null)
 
