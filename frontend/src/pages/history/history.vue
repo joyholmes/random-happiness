@@ -1,13 +1,13 @@
 <template>
-  <view class="container mx-auto px-4 py-6 max-w-md">
+  <view class="container">
     <!-- 主要内容区域 -->
     <view class="main">
-      <view class="bg-white rounded-3xl shadow-sm p-8 mb-6">
-        <text class="text-xl font-medium text-center text-gray-800 mb-8 block">历史记录</text>
+      <view class="history-card">
+        <text class="title">历史记录</text>
 
         <!-- 历史记录列表 -->
-        <view class="space-y-6">
-          <view v-if="shownEvents.length === 0" class="text-center text-gray-500 py-4">
+        <view class="history-list">
+          <view v-if="shownEvents.length === 0" class="empty-tip">
             暂无历史记录
           </view>
           
@@ -15,27 +15,22 @@
             v-for="(event, index) in shownEvents" 
             :key="event.id"
             :url="'/pages/detail/detail?id=' + event.id"
-            class="block"
+            class="history-item"
           >
-            <view class="flex items-center justify-between py-2">
-              <view class="flex items-center">
-                <view class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                  <text class="text-blue-500 text-lg">{{ getEventIcon(event) }}</text>
+            <view class="event-row">
+              <view class="event-info">
+                <view class="icon-wrapper">
+                  <text class="icon">{{ getEventIcon(event) }}</text>
                 </view>
-                <text class="text-gray-700">{{ event.description }}</text>
+                <text class="event-text">{{ event.description }}</text>
               </view>
-              <text class="text-sm text-gray-500">{{ formatDate(event.shownTime) }}</text>
+              <text class="date-text">{{ formatDate(event.shownTime) }}</text>
             </view>
             
-            <view v-if="index < shownEvents.length - 1" class="border-t border-gray-100 mt-4"></view>
+            <view v-if="index < shownEvents.length - 1" class="divider"></view>
           </navigator>
         </view>
       </view>
-
-      <!-- 返回按钮 -->
-      <navigator url="/pages/index/index" open-type="switchTab" class="block w-full text-center text-gray-600 text-sm">
-        返回主界面
-      </navigator>
     </view>
   </view>
 </template>
@@ -87,4 +82,109 @@ function getEventIcon(event) {
   if (event.description.includes('旅行')) return '✈️'
   return '✨' // 默认图标
 }
-</script> 
+</script>
+
+<style>
+.container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  padding-top: calc(180rpx + constant(safe-area-inset-top)); /* iOS 11.2 之前 */
+  padding-top: calc(180rpx + env(safe-area-inset-top)); /* iOS 11.2 及以后 */
+  padding-bottom: calc(120rpx + constant(safe-area-inset-bottom)); /* iOS 11.2 之前 */
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom)); /* iOS 11.2 及以后 */
+}
+
+.main {
+  max-width: 750rpx;
+  margin: 0 auto;
+  padding: 30rpx;
+  box-sizing: border-box;
+}
+
+.history-card {
+  background-color: #ffffff;
+  border-radius: 40rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 40rpx;
+  display: block;
+}
+
+.history-list {
+  box-sizing: border-box;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40rpx 0;
+  font-size: 28rpx;
+}
+
+.history-item {
+  padding: 20rpx 0;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10rpx 0;
+}
+
+.event-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0; /* 防止flex子元素溢出 */
+}
+
+.icon-wrapper {
+  width: 80rpx;
+  height: 80rpx;
+  background-color: #dbeafe;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* 防止图标被压缩 */
+  margin-right: 20rpx;
+}
+
+.icon {
+  font-size: 40rpx;
+  color: #3b82f6;
+}
+
+.event-text {
+  font-size: 28rpx;
+  color: #374151;
+  flex: 1;
+  min-width: 0; /* 确保文本可以正确换行 */
+  margin-right: 20rpx;
+  word-break: break-all; /* 允许在任意字符间换行 */
+}
+
+.date-text {
+  font-size: 24rpx;
+  color: #94a3b8;
+  flex-shrink: 0; /* 防止日期被压缩 */
+  min-width: 80rpx; /* 给日期预留固定宽度 */
+  text-align: right;
+}
+
+.divider {
+  height: 2rpx;
+  background-color: #f1f5f9;
+  margin: 20rpx 0;
+}
+</style> 

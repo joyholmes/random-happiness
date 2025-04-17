@@ -1,29 +1,29 @@
 <template>
-  <view class="container mx-auto px-4 py-6 max-w-md">
+  <view class="container">
     <!-- 主要内容区域 -->
     <view class="main">
-      <view class="bg-white rounded-3xl shadow-sm p-8 mb-6" v-if="event">
+      <view class="detail-card" v-if="event">
         <!-- 图标和事件描述 -->
-        <view class="flex flex-col items-center mb-8">
-          <view class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-            <text class="text-blue-500 text-4xl">{{ getEventIcon(event) }}</text>
+        <view class="content-wrapper">
+          <view class="icon-wrapper">
+            <text class="icon">{{ getEventIcon(event) }}</text>
           </view>
-          <text class="text-xl font-medium text-gray-800 mb-4 text-center">{{ event.description }}</text>
-          <text class="text-sm text-gray-500 mb-6">生成时间：{{ formatDateTime(event.shownTime) }}</text>
+          <text class="title">{{ event.description }}</text>
+          <text class="time">生成时间：{{ formatDateTime(event.shownTime) }}</text>
           
           <!-- 图片展示 -->
-          <view class="w-full aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden" v-if="event.imageUrl">
-            <image :src="event.imageUrl" mode="aspectFill" class="w-full h-full object-cover"></image>
-          </view>
+          <view 
+            class="image-wrapper" 
+            v-if="event.imageUrl"
+            :style="{ backgroundImage: `url(${event.imageUrl})` }"
+          ></view>
         </view>
       </view>
 
       <!-- 按钮区域 -->
-      <view class="space-y-4">
-        <navigator url="/pages/history/history" class="block w-full text-center text-gray-600 text-sm">
-          返回历史记录
-        </navigator>
-        <navigator url="/pages/index/index" open-type="switchTab" class="block w-full text-center text-gray-600 text-sm">
+      <view class="button-group">
+        <button class="back-button" @click="goBack">返回历史记录</button>
+        <navigator url="/pages/index/index" open-type="switchTab" class="home-link">
           返回主界面
         </navigator>
       </view>
@@ -98,20 +98,112 @@ function getEventIcon(event) {
   if (event.description.includes('旅行')) return '✈️'
   return '✨' // 默认图标
 }
+
+function goBack() {
+  uni.navigateBack({
+    delta: 1
+  })
+}
 </script>
 
 <style>
-.aspect-w-16 {
-  position: relative;
-  padding-bottom: 56.25%;
+.container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  padding: 30rpx;
+  padding-top: calc(180rpx + constant(safe-area-inset-top));
+  padding-top: calc(180rpx + env(safe-area-inset-top));
+  padding-bottom: calc(120rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }
 
-.aspect-w-16 image {
-  position: absolute;
+.main {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-card {
+  background-color: #ffffff;
+  border-radius: 40rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  margin-bottom: 40rpx;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.icon-wrapper {
+  width: 160rpx;
+  height: 160rpx;
+  background-color: #dbeafe;
+  border-radius: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40rpx;
+}
+
+.icon {
+  font-size: 80rpx;
+  color: #3b82f6;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 20rpx;
+  line-height: 1.5;
+  padding: 0 20rpx;
+}
+
+.time {
+  font-size: 28rpx;
+  color: #6b7280;
+  margin-bottom: 40rpx;
+}
+
+.image-wrapper {
   width: 100%;
-  top: 0;
-  left: 0;
-  object-fit: cover;
+  height: 400rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.back-button {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 44rpx;
+  text-align: center;
+}
+
+.home-link {
+  font-size: 28rpx;
+  color: #6b7280;
+  padding: 20rpx;
 }
 </style> 

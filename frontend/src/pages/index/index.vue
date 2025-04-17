@@ -1,50 +1,40 @@
 <template>
-  <view class="container mx-auto px-4 py-6 max-w-md">
+  <view class="container">
     <!-- 主要内容区域 -->
     <view class="main">
       <!-- 事件显示区域 -->
-      <view class="bg-white rounded-3xl shadow-sm p-8 mb-6">
-        <text class="text-xl font-medium text-center text-gray-800 mb-8 block">今日幸福时刻</text>
+      <view class="event-card">
+        <text class="title">今日幸福时刻</text>
         
         <!-- 图标和事件描述 -->
-        <view class="flex flex-col items-center mb-8">
-          <view class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-            <text class="text-blue-500 text-4xl" v-if="!currentEvent">✨</text>
-            <text class="text-blue-500 text-4xl" v-else>🎵</text>
+        <view class="event-content">
+          <view class="icon-wrapper">
+            <text class="icon" v-if="!currentEvent">✨</text>
+            <text class="icon" v-else>{{ getEventIcon(currentEvent) }}</text>
           </view>
-          <text class="text-lg text-center text-gray-700 mb-6" v-if="currentEvent">{{ currentEvent.description }}</text>
-          <text class="text-lg text-center text-gray-700 mb-6" v-else>点击下方按钮生成幸福时刻</text>
+          <text class="description" v-if="currentEvent">{{ currentEvent.description }}</text>
+          <text class="description" v-else>点击下方按钮生成幸福时刻</text>
           
           <!-- 添加图片展示 -->
-          <view class="w-full aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden mb-6" v-if="currentEvent && currentEvent.imageUrl">
-            <image :src="currentEvent.imageUrl" mode="aspectFill" class="w-full h-full object-cover"></image>
-          </view>
-          <view class="w-full aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden mb-6 bg-gray-100 flex items-center justify-center" v-else-if="currentEvent && isLoading">
-            <text class="text-gray-500">图片加载中...</text>
+          <view 
+            class="image-wrapper" 
+            v-if="currentEvent && currentEvent.imageUrl"
+            :style="{ backgroundImage: `url(${currentEvent.imageUrl})` }"
+          ></view>
+          <view class="image-wrapper loading" v-else-if="currentEvent && isLoading">
+            <text class="loading-text">图片加载中...</text>
           </view>
         </view>
-
-        <!-- 进度显示 -->
-        <text class="text-sm text-center text-gray-500 block">已生成 {{ shownCount }}/{{ totalCount }} 个幸福时刻</text>
       </view>
 
       <!-- 按钮区域 -->
-      <view class="space-y-4">
+      <view class="button-area">
         <button 
-          class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium py-4 px-6 rounded-2xl"
+          class="generate-button"
           @click="generateEvent"
         >
           {{ currentEvent ? '换一个幸福时刻' : '生成幸福时刻' }}
         </button>
-        
-        <view class="grid grid-cols-2 gap-4">
-          <navigator url="/pages/history/history" class="text-gray-600 text-center text-sm">
-            查看历史记录
-          </navigator>
-          <button class="text-gray-600 text-center text-sm" @click="confirmReset">
-            重置列表
-          </button>
-        </view>
       </view>
     </view>
   </view>
@@ -64,7 +54,6 @@ onMounted(() => {
 })
 
 onShow(() => {
-  // 每次显示页面时重新加载统计数据
   loadEventStats()
 })
 
@@ -73,7 +62,6 @@ function loadEventStats() {
   totalCount.value = events.length
   shownCount.value = events.filter(event => event.isShown).length
   
-  // 如果有当前事件，加载它
   const currentEventId = uni.getStorageSync('currentEventId')
   if (currentEventId) {
     currentEvent.value = events.find(event => event.id === currentEventId)
@@ -82,32 +70,25 @@ function loadEventStats() {
 
 function generateEvent() {
   const events = uni.getStorageSync('happyEvents') || []
-  
-  // 过滤出未展示的事件
   const unshownEvents = events.filter(event => !event.isShown)
   
+  // 如果所有事件都已显示，自动重置列表
   if (unshownEvents.length === 0) {
-    uni.showToast({
-      title: '所有事件已生成，请重置列表',
-      icon: 'none'
-    })
-    return
+    resetEvents()
+    return generateEvent() // 递归调用生成新事件
   }
   
   // 随机选择一个未展示的事件
   const randomIndex = Math.floor(Math.random() * unshownEvents.length)
   const selectedEvent = unshownEvents[randomIndex]
   
-  // 显示加载状态
   isLoading.value = true
   
   // 模拟API请求延迟
   setTimeout(() => {
-    // 构建图片URL
     const encodedPrompt = encodeURIComponent(selectedEvent.description)
     const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`
     
-    // 更新事件状态
     const updatedEvents = events.map(event => {
       if (event.id === selectedEvent.id) {
         return {
@@ -120,11 +101,9 @@ function generateEvent() {
       return event
     })
     
-    // 保存到本地存储
     uni.setStorageSync('happyEvents', updatedEvents)
     uni.setStorageSync('currentEventId', selectedEvent.id)
     
-    // 更新当前事件和统计数据
     currentEvent.value = {
       ...selectedEvent,
       isShown: true,
@@ -134,18 +113,6 @@ function generateEvent() {
     isLoading.value = false
     loadEventStats()
   }, 1000)
-}
-
-function confirmReset() {
-  uni.showModal({
-    title: '确认重置',
-    content: '确定要重置所有事件列表吗？',
-    success: (res) => {
-      if (res.confirm) {
-        resetEvents()
-      }
-    }
-  })
 }
 
 function resetEvents() {
@@ -159,42 +126,152 @@ function resetEvents() {
   
   uni.setStorageSync('happyEvents', resetEvents)
   uni.removeStorageSync('currentEventId')
-  
   currentEvent.value = null
   loadEventStats()
-  
-  uni.showToast({
-    title: '重置成功',
-    icon: 'success'
-  })
+}
+
+// 添加获取事件图标的函数
+function getEventIcon(event) {
+  if (event.description.includes('音乐')) return '🎵'
+  if (event.description.includes('散步') || event.description.includes('公园')) return '🌳'
+  if (event.description.includes('朋友') || event.description.includes('问候')) return '👋'
+  if (event.description.includes('饮料') || event.description.includes('品尝')) return '☕'
+  if (event.description.includes('书')) return '📚'
+  if (event.description.includes('运动')) return '🏃'
+  if (event.description.includes('风景') || event.description.includes('窗外')) return '🏞️'
+  if (event.description.includes('感恩')) return '🙏'
+  if (event.description.includes('整理') || event.description.includes('空间')) return '🧹'
+  if (event.description.includes('食谱') || event.description.includes('尝试')) return '🍳'
+  if (event.description.includes('云')) return '☁️'
+  if (event.description.includes('呼吸')) return '🧘'
+  if (event.description.includes('回忆')) return '💭'
+  if (event.description.includes('奖励')) return '🎁'
+  if (event.description.includes('旅行')) return '✈️'
+  return '✨' // 默认图标
 }
 </script>
 
 <style>
-.aspect-w-16 {
-  position: relative;
-  padding-bottom: 56.25%;
+.container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 30rpx;
+  padding-top: calc(180rpx + constant(safe-area-inset-top)); /* iOS 11.2 之前 */
+  padding-top: calc(180rpx + env(safe-area-inset-top)); /* iOS 11.2 及以后 */
+  padding-bottom: calc(200rpx + constant(safe-area-inset-bottom)); /* iOS 11.2 之前 */
+  padding-bottom: calc(200rpx + env(safe-area-inset-bottom)); /* iOS 11.2 及以后 */
 }
 
-.aspect-w-16 image {
-  position: absolute;
+.main {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* 为绝对定位的按钮提供参考 */
+}
+
+.event-card {
+  background-color: #ffffff;
+  border-radius: 40rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 40rpx;
+  display: block;
+}
+
+.event-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-wrapper {
+  width: 120rpx;
+  height: 120rpx;
+  background-color: #dbeafe;
+  border-radius: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30rpx;
+}
+
+.icon {
+  font-size: 60rpx;
+  color: #3b82f6;
+}
+
+.description {
+  font-size: 32rpx;
+  color: #374151;
+  text-align: center;
+  margin-bottom: 30rpx;
+  line-height: 1.5;
+  padding: 0 20rpx;
+}
+
+.image-wrapper {
   width: 100%;
-  top: 0;
-  left: 0;
-  object-fit: cover;
+  height: 400rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-button:active {
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.event-image {
+  display: none;
+}
+
+.button-area {
+  position: absolute;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: -120rpx; /* 调整按钮位置，确保不会被tabbar遮挡 */
+  z-index: 1;
+}
+
+.generate-button {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 48rpx;
+  border: none;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.generate-button:active {
   transform: scale(0.98);
-}
-
-.bg-gradient-to-r {
-  background-size: 200% auto;
-  transition: 0.3s;
-}
-
-.bg-gradient-to-r:hover {
-  background-position: right center;
+  opacity: 0.9;
 }
 </style> 

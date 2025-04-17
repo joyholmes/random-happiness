@@ -1,28 +1,10 @@
 {
   "pages": [
-    {
-      "path": "pages/index/index",
-      "style": {
-        "navigationBarTitleText": "今日幸福时刻",
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/history/history",
-      "style": {
-        "navigationBarTitleText": "历史记录",
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/detail/detail",
-      "style": {
-        "navigationBarTitleText": "事件详情",
-        "navigationStyle": "custom"
-      }
-    }
+    "pages/index/index",
+    "pages/history/history",
+    "pages/detail/detail"
   ],
-  "globalStyle": {
+  "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "幸福时刻生成器",
     "navigationBarBackgroundColor": "#F8F8F8",
@@ -33,9 +15,6 @@
     "selectedColor": "#3B82F6",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
-    "fontSize": "24rpx",
-    "height": "120rpx",
-    "iconWidth": "48rpx",
     "list": [
       {
         "pagePath": "pages/index/index",
@@ -50,5 +29,6 @@
         "selectedIconPath": "static/images/history-active.png"
       }
     ]
-  }
-} 
+  },
+  "usingComponents": {}
+}
